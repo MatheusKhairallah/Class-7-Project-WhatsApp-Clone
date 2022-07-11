@@ -1,5 +1,6 @@
 import { Format } from './../util/Format';
 import { CameraController } from './CameraController';
+import { DocumentPreviewController } from './DocumentPreviewController';
 
 export class WhatsAppController {
 
@@ -225,7 +226,7 @@ export class WhatsAppController {
             this.el.containerSendPicture.hide();
         });
 
-        this.el.btnSendPicture.on('click', event => {
+        this.el.btnSendPicture.on('click', e => {
             
         });
 
@@ -235,6 +236,27 @@ export class WhatsAppController {
             this.el.panelDocumentPreview.css({
                 'height':'calc(100% - 1px)'
             });
+            this.el.inputDocument.click();
+        });
+
+        this.el.inputDocument.on('change', e => {
+
+            if(this.el.inputDocument.files.length) {
+                let file = this.el.inputDocument.files[0];
+
+                this._documentPreviewController = new DocumentPreviewController(file);
+
+                this._documentPreviewController.getPreviewData().then(result => {
+
+                    this.el.imgPanelDocumentPreview.src = result.src;
+                    this.el.infoPanelDocumentPreview.innerHTML = result.info;
+                    this.el.imagePanelDocumentPreview.show();
+                    this.el.filePanelDocumentPreview.hide();
+
+                }).catch(err => {
+
+                });
+            }
         });
 
         this.el.btnClosePanelDocumentPreview.on('click', e => {
