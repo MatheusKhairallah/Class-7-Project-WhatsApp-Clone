@@ -6,11 +6,11 @@ export class ClassEvent {
 
     }
 
-    on(eventName, fn) {
+    on(name, fn) {
 
-        if (!this._events[eventName]) this._events[eventName] = new Array();
+        if (!this._events[name]) this._events[name] = new Array();
 
-        this._events[eventName].push(fn);
+        this._events[name].push(fn);
 
     }
 
@@ -24,7 +24,10 @@ export class ClassEvent {
 
             this._events[eventName].forEach(fn => {
 
-                fn.apply(null, args);
+                fn.apply(null, args, {
+                    type: eventName,
+                    timeStamp: new Date().getTime()
+                });
 
             });
 

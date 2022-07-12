@@ -20,7 +20,7 @@ export class CameraController {
 
     }
 
-    takePicture(mimeType = 'image/png') {
+    takePicture(mimeType = 'image/png'){
 
         let canvas = document.createElement('canvas');
 
@@ -44,4 +44,5 @@ export class CameraController {
         });
 
     }
+
 }

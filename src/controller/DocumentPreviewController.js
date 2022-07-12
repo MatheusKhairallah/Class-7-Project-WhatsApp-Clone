@@ -1,5 +1,5 @@
-const pdfjsLib = require('pdfjs-dist');
-const path = require('path');
+var pdfjsLib = require('pdfjs-dist');
+var path = require('path');
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = path.resolve(__dirname, '../../dist/pdf.worker.bundle.js');
 
@@ -11,11 +11,20 @@ export class DocumentPreviewController {
 
     }
 
-    getPreviewData(){
+    getPriviewData(){
 
-        return new Promise((s, f) => {
+        return new Promise((resolve, reject)=>{
 
             let reader = new FileReader();
+
+            reader.onerror = event => {
+
+                reject({
+                    error: true,
+                    event
+                });
+
+            };
 
             switch (this._file.type) {
 
@@ -23,25 +32,23 @@ export class DocumentPreviewController {
                 case 'image/jpeg':
                 case 'image/jpg':
                 case 'image/gif':
-                reader.onload = e => {
 
-                    s({
-                        src: reader.result,
-                        info: this._file.name
-                    });
+                    reader.onload = event => {
 
-                };
-                reader.onerror = e => {
+                        resolve({
+                            src: reader.result,
+                            info: this._file.name
+                        });
 
-                    f(e);
-    
-                };
-                reader.readAsDataURL(this._file);
-                break;
+                    };
+
+                    reader.readAsDataURL(this._file);
+
+                    break;
 
                 case 'application/pdf':
 
-                    reader.onload = e => {
+                    reader.onload = event => {
 
                         pdfjsLib.getDocument(new Uint8Array(reader.result)).then(pdf => {
 
@@ -52,42 +59,47 @@ export class DocumentPreviewController {
                                 let canvas = document.createElement('canvas');
                                 let canvasContext = canvas.getContext('2d');
 
-                                canvas.width = viewport.width;
                                 canvas.height = viewport.height;
+                                canvas.width = viewport.width;
 
                                 page.render({
                                     canvasContext,
                                     viewport
                                 }).then(() => {
 
-                                    let _s = (pdf.numPages > 1) ? 's' : '';
+                                    let s = (pdf.numPages > 1) ? 's' : '';
 
-                                    s({
+                                    resolve({
                                         src: canvas.toDataURL('image/png'),
-                                        info: `${pdf.numPages} página${_s}`
+                                        info: `${pdf.numPages} página${s}`
                                     });
 
-                                }).catch(err => {
-                                    f(err);
                                 });
 
-                            }).catch(err => {
-                                f(err);
                             });
 
-                        }) .catch(err => {
-                            f(err);
-                        });
+                        }).catch(event => {
 
-                    }
+                            reject({
+                                error: true,
+                                event
+                            });
+
+                        });                   
+
+                    };
 
                     reader.readAsArrayBuffer(this._file);
 
-                break;
+                    break;
 
                 default:
+                    
+                    reject({
+                        error: false
+                    });
 
-                    f();
+                    break;
 
             }
 
